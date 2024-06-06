@@ -64,6 +64,26 @@ enum RomanNumeral {
     }
 }
 
+enum OperandType {
+    ARABIC, ARABIC_INTEGER, ROMAN, INCORRECT;
+
+    static String romanRegex = "^M*(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$";
+    static String arabicRegex = "\\d+.?\\d+";
+    static String arabicIntegerRegex = "\\d+";
+
+    static OperandType getType(String input) {
+        if (input.matches(romanRegex) && !input.equals("")) {
+            return ROMAN;
+        } else if (input.matches(arabicRegex)) {
+            return ARABIC;
+        } else if (input.matches(arabicIntegerRegex)) {
+            return ARABIC_INTEGER;
+        }
+        return INCORRECT;
+    }
+
+}
+
 class Data {
 
     private String firstOperand;
@@ -119,15 +139,13 @@ class Calculator {
 
 class StringParser {
 
-    static String romanRegex = "^M*(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$";
-    static String arabicRegex = "\\d+";
     static String operatorRegex = "[+/*-]";
 
     static Data parse(String input) throws Exception {
         String[] operands = input.split(operatorRegex);
 
         verificationOperation(input);
-        boolean romanNumerals = verificationOperands(operands);
+        boolean romanNumerals = isRomanNumerals(operands);
 
         int startPosition = operands[0].length();
         String operation = input.substring(startPosition, startPosition + 1);
@@ -136,49 +154,44 @@ class StringParser {
     }
 
     static boolean isRomanNumerals(String[] operands) throws Exception {
-        int romanNumeralsCount = 0;
-        for (String operand : operands) {
-            if (operand.matches(romanRegex) && !operand.equals("")) {
-                romanNumeralsCount++;
-            }
-        }
-        if (romanNumeralsCount == 1) {
-            throw new Exception("используются одновременно разные системы счисления");
-        }
-        return romanNumeralsCount != 0;
-    }
-
-    static boolean verificationOperands(String[] operands) throws Exception {
         if (operands.length != 2) {
             throw new Exception("строка не является математической операцией");
         }
 
-        boolean isRomanNumerals = isRomanNumerals(operands);
+        String firstOperand = operands[0];
+        String secondOperand = operands[1];
 
-        for (String operand : operands) {
-            boolean isArabic = operand.matches(arabicRegex);
-            boolean isRoman = operand.matches(romanRegex);
-            boolean isEmpty = operand.equals("");
+        OperandType firstOperandType = OperandType.getType(firstOperand);
+        OperandType secondOperandType = OperandType.getType(secondOperand);
 
-            if (isEmpty) {
-                throw new Exception("строка не является математической операцией");
-            } else if (!isArabic && !isRoman) {
-                throw new Exception("калькулятор умеет работать только с целыми числами");
-            }
+        if (firstOperandType == OperandType.INCORRECT || secondOperandType == OperandType.INCORRECT) {
+            throw new Exception("строка не является математической операцией");
+        }
 
-            if (!isRomanNumerals) {
-                if (Integer.parseInt(operand) < 1 || Integer.parseInt(operand) > 10) {
-                    throw new Exception("калькулятор должен принимать на вход арабские числа" +
-                            " от 1 до 10 включительно");
-                }
-            } else {
-                if (RomanNumeral.romanToArabic(operand) > 10) {
-                    throw new Exception("калькулятор должен принимать на вход римские числа" +
-                            " от 1 до 10 включительно");
-                }
+        if ((firstOperandType == OperandType.ARABIC || secondOperandType == OperandType.ARABIC)) {
+            throw new Exception("калькулятор умеет работать только с целыми числами");
+        }
+
+        if (firstOperandType != secondOperandType) {
+            throw new Exception("используются одновременно разные системы счисления");
+        }
+
+        if (firstOperandType == OperandType.ARABIC_INTEGER) {
+            if ((Integer.parseInt(firstOperand) < 1 || Integer.parseInt(firstOperand) > 10) ||
+                    (Integer.parseInt(secondOperand) < 1 || Integer.parseInt(secondOperand) > 10)) {
+                throw new Exception("калькулятор должен принимать на вход арабские числа" +
+                        " от 1 до 10 включительно");
             }
         }
-        return isRomanNumerals;
+
+        if (firstOperandType == OperandType.ROMAN) {
+            if ((RomanNumeral.romanToArabic(firstOperand) > 10) || (RomanNumeral.romanToArabic(secondOperand) > 10)) {
+                throw new Exception("калькулятор должен принимать на вход римские числа" +
+                        " от 1 до 10 включительно");
+            }
+            return true;
+        }
+        return false;
     }
 
     static void verificationOperation(String input) throws Exception {
