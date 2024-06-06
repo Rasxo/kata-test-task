@@ -99,7 +99,7 @@ class Data {
 }
 
 class Calculator {
-    static String increment(Data data) {
+    static String addition(Data data) {
         String firstOperand = data.getFirstOperand();
         String secondOperand = data.getSecondOperand();
 
@@ -110,7 +110,7 @@ class Calculator {
                 + RomanNumeral.romanToArabic(secondOperand));
     }
 
-    static String decrement(Data data) throws Exception {
+    static String subtraction(Data data) throws Exception {
         String firstOperand = data.getFirstOperand();
         String secondOperand = data.getSecondOperand();
 
@@ -252,10 +252,10 @@ public class Main {
 
         switch (data.getOperation()) {
             case "+" -> {
-                return Calculator.increment(data);
+                return Calculator.addition(data);
             }
             case "-" -> {
-                return Calculator.decrement(data);
+                return Calculator.subtraction(data);
             }
             case "/" -> {
                 return Calculator.division(data);
