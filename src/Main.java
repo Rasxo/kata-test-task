@@ -99,58 +99,21 @@ class Data {
 }
 
 class Calculator {
-    static String addition(Data data) {
-        String firstOperand = data.getFirstOperand();
-        String secondOperand = data.getSecondOperand();
 
-        if (!data.isRomanNumerals()) {
-            return String.valueOf(Integer.parseInt(firstOperand) + Integer.parseInt(secondOperand));
-        }
-        return RomanNumeral.arabicToRoman(RomanNumeral.romanToArabic(firstOperand)
-                + RomanNumeral.romanToArabic(secondOperand));
+    static int addition(int firstOperand, int secondOperand) {
+        return firstOperand + secondOperand;
     }
 
-    static String subtraction(Data data) throws Exception {
-        String firstOperand = data.getFirstOperand();
-        String secondOperand = data.getSecondOperand();
-
-        if (!data.isRomanNumerals()) {
-            return String.valueOf(Integer.parseInt(firstOperand) - Integer.parseInt(secondOperand));
-        } else {
-            int preResult = (RomanNumeral.romanToArabic(firstOperand) - RomanNumeral.romanToArabic(secondOperand));
-            if (preResult < 1) {
-                throw new Exception("результаты работы калькулятора с римскими числами могут" +
-                        " быть только положительные числа");
-            }
-            return RomanNumeral.arabicToRoman(preResult);
-        }
+    static int subtraction(int firstOperand, int secondOperand) {
+        return firstOperand - secondOperand;
     }
 
-    static String division(Data data) throws Exception {
-        String firstOperand = data.getFirstOperand();
-        String secondOperand = data.getSecondOperand();
-
-        if (!data.isRomanNumerals()) {
-            return String.valueOf(Integer.parseInt(firstOperand) / Integer.parseInt(secondOperand));
-        } else {
-            int preResult = RomanNumeral.romanToArabic(firstOperand) / RomanNumeral.romanToArabic(secondOperand);
-            if (preResult < 1) {
-                throw new Exception("результаты работы калькулятора с римскими числами могут" +
-                        " быть только положительные числа");
-            }
-            return RomanNumeral.arabicToRoman(preResult);
-        }
+    static int division(int firstOperand, int secondOperand) {
+        return firstOperand / secondOperand;
     }
 
-    static String multiply(Data data) {
-        String firstOperand = data.getFirstOperand();
-        String secondOperand = data.getSecondOperand();
-
-        if (!data.isRomanNumerals()) {
-            return String.valueOf(Integer.parseInt(firstOperand) * Integer.parseInt(secondOperand));
-        }
-        return RomanNumeral.arabicToRoman(RomanNumeral.romanToArabic(firstOperand)
-                * RomanNumeral.romanToArabic(secondOperand));
+    static int multiply(int firstOperand, int secondOperand) {
+        return firstOperand * secondOperand;
     }
 }
 
@@ -228,7 +191,7 @@ class StringParser {
 
         if (count != 1) {
             throw new Exception("формат математической операции не удовлетворяет заданию" +
-            " - два операнда и один оператор (+, -, /, *)");
+                    " - два операнда и один оператор (+, -, /, *)");
         }
     }
 }
@@ -250,19 +213,42 @@ public class Main {
 
         Data data = parser.definingOperandsAndOperation();
 
+        int firstOperand;
+        int secondOperand;
+        boolean isRomanNumerals = data.isRomanNumerals();
+
+        if (isRomanNumerals) {
+            firstOperand = RomanNumeral.romanToArabic(data.getFirstOperand());
+            secondOperand = RomanNumeral.romanToArabic(data.getSecondOperand());
+        } else {
+            firstOperand = Integer.parseInt(data.getFirstOperand());
+            secondOperand = Integer.parseInt(data.getSecondOperand());
+        }
+
+        int result;
+
         switch (data.getOperation()) {
             case "+" -> {
-                return Calculator.addition(data);
+                result = Calculator.addition(firstOperand, secondOperand);
             }
             case "-" -> {
-                return Calculator.subtraction(data);
+                result = Calculator.subtraction(firstOperand, secondOperand);
+                if (isRomanNumerals && result < 1) {
+                    throw new Exception("результаты работы калькулятора с римскими числами могут" +
+                            " быть только положительные числа");
+                }
             }
             case "/" -> {
-                return Calculator.division(data);
+                result = Calculator.division(firstOperand, secondOperand);
+                if (isRomanNumerals && result < 1) {
+                    throw new Exception("результаты работы калькулятора с римскими числами могут" +
+                            " быть только положительные числа");
+                }
             }
             default -> {
-                return Calculator.multiply(data);
+                result = Calculator.multiply(firstOperand, secondOperand);
             }
         }
+        return String.valueOf(isRomanNumerals ? RomanNumeral.arabicToRoman(result) : result);
     }
 }
