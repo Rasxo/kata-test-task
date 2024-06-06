@@ -119,16 +119,11 @@ class Calculator {
 
 class StringParser {
 
-    public StringParser(String input) {
-        this.input = input;
-    }
-
-    private String input;
     static String romanRegex = "^M*(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$";
     static String arabicRegex = "\\d+";
     static String operatorRegex = "[+/*-]";
 
-    Data definingOperandsAndOperation() throws Exception {
+    static Data parse(String input) throws Exception {
         String[] operands = input.split(operatorRegex);
 
         verificationOperation(input);
@@ -140,7 +135,7 @@ class StringParser {
         return new Data(operands[0], operands[1], operation, romanNumerals);
     }
 
-    boolean isRomanNumerals(String[] operands) throws Exception {
+    static boolean isRomanNumerals(String[] operands) throws Exception {
         int romanNumeralsCount = 0;
         for (String operand : operands) {
             if (operand.matches(romanRegex) && !operand.equals("")) {
@@ -153,7 +148,7 @@ class StringParser {
         return romanNumeralsCount != 0;
     }
 
-    boolean verificationOperands(String[] operands) throws Exception {
+    static boolean verificationOperands(String[] operands) throws Exception {
         if (operands.length != 2) {
             throw new Exception("строка не является математической операцией");
         }
@@ -186,7 +181,7 @@ class StringParser {
         return isRomanNumerals;
     }
 
-    void verificationOperation(String input) throws Exception {
+    static void verificationOperation(String input) throws Exception {
         long count = input.chars().filter(ch -> (ch == '+' || ch == '-' || ch == '/' || ch == '*')).count();
 
         if (count != 1) {
@@ -209,9 +204,8 @@ public class Main {
     }
 
     public static String calc(String input) throws Exception {
-        StringParser parser = new StringParser(input);
 
-        Data data = parser.definingOperandsAndOperation();
+        Data data = StringParser.parse(input);
 
         int firstOperand;
         int secondOperand;
@@ -228,9 +222,7 @@ public class Main {
         int result;
 
         switch (data.getOperation()) {
-            case "+" -> {
-                result = Calculator.addition(firstOperand, secondOperand);
-            }
+            case "+" -> result = Calculator.addition(firstOperand, secondOperand);
             case "-" -> {
                 result = Calculator.subtraction(firstOperand, secondOperand);
                 if (isRomanNumerals && result < 1) {
@@ -245,9 +237,7 @@ public class Main {
                             " быть только положительные числа");
                 }
             }
-            default -> {
-                result = Calculator.multiply(firstOperand, secondOperand);
-            }
+            default -> result = Calculator.multiply(firstOperand, secondOperand);
         }
         return String.valueOf(isRomanNumerals ? RomanNumeral.arabicToRoman(result) : result);
     }
